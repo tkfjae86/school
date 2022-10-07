@@ -16,8 +16,7 @@
     "service_worker": "background.js"
   },
   "permissions": [
-    "proxy",
-    "storage"
+    "proxy"
   ],
   "manifest_version": 3
 }

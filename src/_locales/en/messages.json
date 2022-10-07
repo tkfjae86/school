@@ -42,13 +42,5 @@
   "errorProxyDetailedError": {
     "message": "ProxyError: $1. $2.",
     "description": "Error message displayed in popup when an error occurs."
-  },
-  "errorIdNotFound": {
-    "message": "Element with ID `$1` doesn't exist in the document",
-    "description": "Error message thrown when the given `id` doesn't exist"
-  },
-  "errorIdNotForm": {
-    "message": "Element with ID `$1` isn't a form element.",
-    "description": "Error message thrown when the given `id` isn't a form element."
   }
 }

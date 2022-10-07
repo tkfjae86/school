@@ -10,5 +10,5 @@
  */
 
 document.addEventListener('DOMContentLoaded', function () {
-  var c = new ProxyFormController( 'proxyForm' );
+  var c = new ProxyFormController( 'proxyHeader', 'proxyForm' );
 });
