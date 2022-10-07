@@ -99,10 +99,10 @@ ProxyFormController.WrappedProxyConfig;
  *     value has been persisted.
  * @static
  */
-ProxyFormController.getPersistedSettings = function() {
-  var result = null;
-  if (window.localStorage['proxyConfig'] !== undefined)
-    result = JSON.parse(window.localStorage['proxyConfig']);
+ProxyFormController.getPersistedSettings = async function() {
+  let result = (await chrome.storage.local.get(['proxyConfig']))?.proxyConfig;
+  if (result !== undefined)
+    result = JSON.parse(result);
   return result ? result : null;
 };
 
@@ -113,8 +113,8 @@ ProxyFormController.getPersistedSettings = function() {
  * @param {!ProxyConfig} config The proxy config to persist.
  * @static
  */
-ProxyFormController.setPersistedSettings = function(config) {
-  window.localStorage['proxyConfig'] = JSON.stringify(config);
+ProxyFormController.setPersistedSettings = async function(config) {
+  await chrome.storage.local.set({proxyConfig: JSON.stringify(config)});
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -514,7 +514,7 @@ ProxyFormController.prototype = {
     chrome.proxy.settings.set(
         {value: this.config_.regular, scope: 'regular'},
         this.callbackForRegularSettings_.bind(this));
-    chrome.extension.sendRequest({type: 'clearError'});
+    chrome.runtime.sendMessage({type: 'clearError'});
   },
 
   /**
@@ -767,7 +767,7 @@ ProxyFormController.prototype = {
    * @private
    */
   handleProxyErrors_: function() {
-    chrome.extension.sendRequest(
+    chrome.runtime.sendMessage(
         {type: 'getError'},
         this.handleProxyErrorHandlerResponse_.bind(this));
   },

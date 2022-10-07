@@ -9,14 +9,15 @@
  * @author Mike West <mkwst@google.com>
  */
 
-document.addEventListener("DOMContentLoaded", function () {
-  var errorHandler = new ProxyErrorHandler();
+importScripts("proxy_form_controller.js", "proxy_error_handler.js");
 
-  // If this extension has already set the proxy settings, then reset it
-  // once as the background page initializes.  This is essential, as
-  // incognito settings are wiped on restart.
-  var persistedSettings = ProxyFormController.getPersistedSettings();
-  if (persistedSettings !== null) {
+const errorHandler = new ProxyErrorHandler();
+
+// If this extension has already set the proxy settings, then reset it
+// once as the background page initializes.  This is essential, as
+// incognito settings are wiped on restart.
+ProxyFormController.getPersistedSettings().then((persistedSettings) => {
+  if (persistedSettings) {
     chrome.proxy.settings.set(
         {'value': persistedSettings.regular});
   }
