@@ -624,10 +624,9 @@ ProxyFormController.prototype = {
 
     // If we can't access Incognito settings, throw a message and return.
     if (!this.isAllowedIncognitoAccess_) {
-      var msg = "I'm sorry, Dave, I'm afraid I can't do that. Give me access " +
-                "to Incognito settings by checking the checkbox labeled " +
-                "'Allow in Incognito mode', which is visible at " +
-                "chrome://extensions.";
+      var msg = "I'm sorry, Dave, I'm afraid I can't do that. " +
+                "Please right-click my icon, select 'Manage\u00A0extension', " +
+                "and enable 'Allow\u00A0in\u00A0Incognito' to use this feature.";
       this.generateAlert_(msg);
       return;
     }
