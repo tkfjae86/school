@@ -11,20 +11,12 @@
     "message": "Direct Connection",
     "description": "Header for 'Direct Connection' configuration `fieldset`."
   },
-  "errorNoExtensionAccess": {
-    "message": "Sorry. This browser's proxy settings cannot be controlled via extensions.",
-    "description": "Error message displayed when `levelOfControl` is 'not_controllable'."
-  },
-  "errorOtherExtensionControls": {
-    "message": "Sorry. This browser's proxy settings are being controlled by another extension. Please visit chrome://extensions for details.",
-    "description": "Error message displayed when `levelOfControl` is 'controlled_by_other_extensions'."
-  },
   "errorSettingRegularProxy": {
-    "message": "Setting regular proxy settings failed.  Sorry!",
+    "message": "Setting regular proxy/privacy settings failed.  Sorry!",
     "description": "Error message, displayed when failing to set regular proxy settings."
   },
   "errorSettingIncognitoProxy": {
-    "message": "Setting incognito proxy settings failed.  Sorry!",
+    "message": "Setting incognito proxy/privacy settings failed.  Sorry!",
     "description": "Error message, displayed when failing to set incognito proxy settings."
   },
   "successfullySetProxy": {

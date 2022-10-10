@@ -121,6 +121,10 @@ input[type="checkbox"] {
   margin: 5px 0 5px 35px;
 }
 
+#restrictRtc {
+  margin: 5px 5px 15px 10px;
+}
+
 input[type="text"] {
   width: 200px;
   margin: 0 10px 0 0;
@@ -144,14 +148,14 @@ section legend {
 
 .active section label,
 .active section legend,
-form > fieldset > label  {
+form > label  {
   color:  #000;
   transition: color 0.5s ease;
 }
 
 .incognito .active section label,
 .incognito .active section legend,
-.incognito form > fieldset > label {
+.incognito form > label {
   color: #FFF;
 }
 
@@ -186,6 +190,7 @@ button {
   font: 1.5em/1.2 Helvetica Neue, sans-serif;
   transform: scale(0);
   transition: all 1.0s ease;
+  white-space: pre-line;
 }
 
 .overlay a {

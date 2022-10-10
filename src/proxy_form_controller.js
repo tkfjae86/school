@@ -63,6 +63,11 @@ ProxyFormController.ProxyTypes = {
   SYSTEM: 'system'
 };
 
+ProxyFormController.RestrictRtcTypes = {
+  DEFAULT: 'default',
+  RESTRICT: 'disable_non_proxied_udp'
+};
+
 /**
  * The window types we're capable of handling.
  * @enum {int}
@@ -77,29 +82,22 @@ ProxyFormController.WindowTypes = {
  * @enum {string}
  */
 ProxyFormController.LevelOfControl = {
-  NOT_CONTROLLABLE: 'not_controllable',
-  OTHER_EXTENSION: 'controlled_by_other_extension',
   AVAILABLE: 'controllable_by_this_extension',
   CONTROLLING: 'controlled_by_this_extension'
 };
 
-/**
- * The response type from 'proxy.settings.get'
- *
- * @typedef {{value: ProxyConfig,
- *     levelOfControl: ProxyFormController.LevelOfControl}}
- */
-ProxyFormController.WrappedProxyConfig;
-
 ///////////////////////////////////////////////////////////////////////////////
 
 ProxyFormController.prototype = {
-  /**
-   * The form's current state.
-   * @type {regular: ?ProxyConfig, incognito: ?ProxyConfig}
-   * @private
-   */
-  config_: {regular: null, incognito: null},
+  regularConfig_: {
+    proxy: null,
+    restrictRtc: null
+  },
+
+  incognitoConfig_: {
+    proxy: null,
+    restrictRtc: null
+  },
 
   /**
    * Do we have access to incognito mode?
@@ -259,6 +257,17 @@ ProxyFormController.prototype = {
     this.setProxyImpl_('Fallback', data);
   },
 
+  get restrictRtc() {
+    var checkbox = document.getElementById('restrictRtc');
+    return checkbox.checked ?
+        ProxyFormController.RestrictRtcTypes.RESTRICT :
+        ProxyFormController.RestrictRtcTypes.DEFAULT;
+  },
+
+  set restrictRtc(data) {
+    var checkbox = document.getElementById('restrictRtc');
+    checkbox.checked = (data == ProxyFormController.RestrictRtcTypes.RESTRICT);
+  },
 
   /**
    * @param {string} type The type of proxy that's being set ("Http",
@@ -304,66 +313,46 @@ ProxyFormController.prototype = {
    *
    * @private
    */
-  readCurrentState_: function() {
-    chrome.extension.isAllowedIncognitoAccess(
-        this.handleIncognitoAccessResponse_.bind(this));
-  },
-
-  /**
-   * Handles the respnse from `chrome.extension.isAllowedIncognitoAccess`
-   * We can't render the form until we know what our access level is, so
-   * we wait until we have confirmed incognito access levels before
-   * asking for the proxy state.
-   *
-   * @param {boolean} state The state of incognito access.
-   * @private
-   */
-  handleIncognitoAccessResponse_: function(state) {
-    this.isAllowedIncognitoAccess_ = state;
-    chrome.proxy.settings.get({incognito: false},
-        this.handleRegularState_.bind(this));
+  readCurrentState_: async function() {
+    this.isAllowedIncognitoAccess_ = await chrome.extension.isAllowedIncognitoAccess();
+    const errs = ["Failed to read state:"];
+    c = await chrome.proxy.settings.get({incognito: false});
+    if (this.accessOk_(c, errs, "regular/proxy")) {
+      this.regularConfig_.proxy = c.value;
+    }
+    c = await chrome.privacy.network.webRTCIPHandlingPolicy.get({incognito: false});
+    if (this.accessOk_(c, errs, "regular/privacy")) {
+      this.regularConfig_.restrictRtc = c.value;
+    }
     if (this.isAllowedIncognitoAccess_) {
-      chrome.proxy.settings.get({incognito: true},
-          this.handleIncognitoState_.bind(this));
+      c = await chrome.proxy.settings.get({incognito: true});
+      if (this.accessOk_(c, errs, "incognito/proxy")) {
+        this.incognitoConfig_.proxy = c.value;
+      }
+      c = await chrome.privacy.network.webRTCIPHandlingPolicy.get({incognito: true});
+      if (this.accessOk_(c, errs, "incognito/privacy")) {
+        this.incognitoConfig_.restrictRtc = c.value;
+      }
+    }
+
+    if (this.isIncognitoMode_()) {
+      this.recalcFormValues_(this.incognitoConfig_);
+    } else {
+      this.recalcFormValues_(this.regularConfig_);
+    }
+
+    if (errs.length > 1) {
+      this.generateAlert_(errs.join('\r\n'));
     }
   },
 
-  /**
-   * Handles the response from 'proxy.settings.get' for regular
-   * settings.
-   *
-   * @param {ProxyFormController.WrappedProxyConfig} c The proxy data and
-   *     extension's level of control thereof.
-   * @private
-   */
-  handleRegularState_: function(c) {
+  accessOk_: function(c, errs, what) {
     if (c.levelOfControl === ProxyFormController.LevelOfControl.AVAILABLE ||
         c.levelOfControl === ProxyFormController.LevelOfControl.CONTROLLING) {
-      this.recalcFormValues_(c.value);
-      this.config_.regular = c.value;
-    } else {
-      this.handleLackOfControl_(c.levelOfControl);
+      return true;
     }
-  },
-
-  /**
-   * Handles the response from 'proxy.settings.get' for incognito
-   * settings.
-   *
-   * @param {ProxyFormController.WrappedProxyConfig} c The proxy data and
-   *     extension's level of control thereof.
-   * @private
-   */
-  handleIncognitoState_: function(c) {
-    if (c.levelOfControl === ProxyFormController.LevelOfControl.AVAILABLE ||
-        c.levelOfControl === ProxyFormController.LevelOfControl.CONTROLLING) {
-      if (this.isIncognitoMode_())
-        this.recalcFormValues_(c.value);
-
-      this.config_.incognito = c.value;
-    } else {
-      this.handleLackOfControl_(c.levelOfControl);
-    }
+    errs.push(`${what}: ${c.levelOfControl}`);
+    return false;
   },
 
   /**
@@ -464,7 +453,6 @@ ProxyFormController.prototype = {
     }
   },
 
-
   /**
    * Handler called in response to click on form's submission button. Generates
    * the proxy configuration and passes it to `useCustomProxySettings`, or
@@ -480,26 +468,37 @@ ProxyFormController.prototype = {
     e.preventDefault();
     e.stopPropagation();
 
-    if (this.isIncognitoMode_())
-      this.config_.incognito = this.generateProxyConfig_();
-    else
-      this.config_.regular = this.generateProxyConfig_();
+    if (this.isIncognitoMode_()) {
+      this.incognitoConfig_.proxy = this.generateProxyConfig_();
+      this.incognitoConfig_.restrictRtc = this.restrictRtc;
+    } else {
+      this.regularConfig_.proxy = this.generateProxyConfig_();
+      this.regularConfig_.restrictRtc = this.restrictRtc;
+    }
 
     chrome.runtime.sendMessage({type: 'clearError'});
     try {
       await chrome.proxy.settings.set({
         scope: 'regular_only',
-        value: this.config_.regular
+        value: this.regularConfig_.proxy
+      });
+      await chrome.privacy.network.webRTCIPHandlingPolicy.set({
+        scope: 'regular_only',
+        value: this.regularConfig_.restrictRtc
       });
     } catch (err) {
       this.generateAlert_(chrome.i18n.getMessage('errorSettingRegularProxy'));
       return;
     }
-    if (this.config_.incognito) {
+    if (this.incognitoConfig_.proxy) {
       try {
         await chrome.proxy.settings.set({
           scope: 'incognito_persistent',
-          value: this.config_.incognito
+          value: this.incognitoConfig_.proxy
+        });
+        await chrome.privacy.network.webRTCIPHandlingPolicy.set({
+          scope: 'incognito_persistent',
+          value: this.incognitoConfig_.restrictRtc
         });
       } catch (err) {
         this.generateAlert_(chrome.i18n.getMessage('errorSettingIncognitoProxy'));
@@ -575,7 +574,6 @@ ProxyFormController.prototype = {
     }
   },
 
-
   /**
    * Sets the proper display classes based on the "Use the same proxy server
    * for all protocols" checkbox. Expects to be called as an event handler
@@ -633,29 +631,30 @@ ProxyFormController.prototype = {
 
     if (this.isIncognitoMode_()) {
       // In incognito mode, switching to cognito.
-      this.config_.incognito = this.generateProxyConfig_();
+      this.incognitoConfig_.proxy = this.generateProxyConfig_();
+      this.incognitoConfig_.restrictRtc = this.restrictRtc;
       div.classList.remove('incognito');
-      this.recalcFormValues_(this.config_.regular);
+      this.recalcFormValues_(this.regularConfig_);
       button.innerText = 'Configure incognito window settings.';
       this.header_.innerHTML = 'Proxy Configuration (regular)';
     } else {
       // In cognito mode, switching to incognito.
-      this.config_.regular = this.generateProxyConfig_();
+      this.regularConfig_.proxy = this.generateProxyConfig_();
+      this.regularConfig_.restrictRtc = this.restrictRtc;
       div.classList.add('incognito');
-      this.recalcFormValues_(this.config_.incognito);
+      this.recalcFormValues_(this.incognitoConfig_);
       button.innerText = 'Configure regular window settings.';
       this.header_.innerHTML = 'Proxy Configuration (incognito)';
     }
   },
 
-
-  /**
-   * Sets the form's values based on a ProxyConfig.
-   *
-   * @param {!ProxyConfig} c The ProxyConfig object.
-   * @private
-   */
-  recalcFormValues_: function(c) {
+  recalcFormValues_: function(config) {
+    const c = config.proxy;
+    const restrictRtc = config.restrictRtc;
+    if (c == null || restrictRtc == null) {
+      console.error("recalcFormValues_ missing data");
+      return;
+    }
     // Normalize `auto_detect`
     if (c.mode === 'auto_detect')
       c.mode = 'pac_script';
@@ -689,27 +688,9 @@ ProxyFormController.prototype = {
       this.fallbackProxy = null;
       this.bypassList = '';
     }
+    // Apply WebRTC restriction.
+    this.restrictRtc = restrictRtc;
   },
-
-
-  /**
-   * Handles the case in which this extension doesn't have the ability to
-   * control the Proxy settings, either because of an overriding policy
-   * or an extension with higher priority.
-   *
-   * @param {ProxyFormController.LevelOfControl} l The level of control this
-   *     extension has over the proxy settings.
-   * @private
-   */
-  handleLackOfControl_: function(l) {
-    var msg;
-    if (l === ProxyFormController.LevelOfControl.NO_ACCESS)
-      msg = chrome.i18n.getMessage('errorNoExtensionAccess');
-    else if (l === ProxyFormController.LevelOfControl.OTHER_EXTENSION)
-      msg = chrome.i18n.getMessage('errorOtherExtensionControls');
-    this.generateAlert_(msg);
-  },
-
 
   /**
    * Handle the case in which errors have been generated outside the context
