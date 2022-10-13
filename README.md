@@ -10,7 +10,7 @@ I've tested the "Incognito to SOCKS5 over WireGuard" config on a Chromebook; it 
 
 Chrome OS supports IPv6-over-SOCKS5 (but not IPv6-over-WireGuard, sigh), so SOCKS5 could let you reach IPv6-only servers from anywhere.
 
-## Note to other extension developers
+## Note to other proxy extension developers
 
 Please steal my code, because 'incognito proxy' is a good feature. I copied it from [chrome-extensions-samples](https://github.com/GoogleChrome/chrome-extensions-samples/tree/475b4b6bf1a376e0cb0de715652a46a458b5fe72/mv2-archive/extensions/proxy_configuration) and made minor improvements.
 
