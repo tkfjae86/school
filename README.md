@@ -14,7 +14,7 @@ Chrome OS supports IPv6-over-SOCKS5 (but not IPv6-over-WireGuard, sigh), so SOCK
 
 Please steal my code, because 'incognito proxy' is a good feature. I copied it from [chrome-extensions-samples](https://github.com/GoogleChrome/chrome-extensions-samples/tree/475b4b6bf1a376e0cb0de715652a46a458b5fe72/mv2-archive/extensions/proxy_configuration) and made minor improvements.
 
-## Chrome installer
+## Add to Chrome link
 
 https://chrome.google.com/webstore/detail/incognito-proxy/odkbcffeaickjalieahlneeehkgjpade
 
