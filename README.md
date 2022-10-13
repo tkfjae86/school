@@ -1,6 +1,6 @@
 # Incognito Proxy 
 
-Incognito mode is nice, but your ISP sees the traffic.  VPNs are pretty neat, but you'll solve CAPTCHAs all day.  Why not have both, with an incognito-only VPN?
+Incognito mode is nice, but your ISP sees the traffic.  VPNs are pretty neat, but you'll solve CAPTCHAs all day.  Why not pick the best of both, with an incognito-only VPN?
 
 The requirements are a SOCKS5 proxy server and a secure tunnel, such as WireGuard with `allowed-ips w.x.y.z/32` (IP address of the proxy) or `ssh -D1080`.  There are commercial VPN providers with WireGuard and SOCKS5, or you could self-host. The **Incognito&nbsp;Proxy** extension solves the sub-problem of "How do I configure a SOCKS5 proxy specifically for Incognito tabs?"
 
