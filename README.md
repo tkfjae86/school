@@ -12,7 +12,7 @@ I've tested the "Incognito to SOCKS5 over WireGuard" config on a Chromebook; it 
 
 Please steal my code, because 'incognito proxy' is a good feature. I copied it from [chrome-extensions-samples](https://github.com/GoogleChrome/chrome-extensions-samples/tree/475b4b6bf1a376e0cb0de715652a46a458b5fe72/mv2-archive/extensions/proxy_configuration) and made minor improvements.
 
-## Add to Chrome link
+## Add to Chrome
 
 https://chrome.google.com/webstore/detail/incognito-proxy/odkbcffeaickjalieahlneeehkgjpade
 
