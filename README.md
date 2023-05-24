@@ -8,6 +8,8 @@ More generally, **this extension configures proxy settings**. It has few feature
 
 I've tested the "Incognito to SOCKS5 over WireGuard" config on a Chromebook; it is unobtrusive, survives rebooting, and I can still LAN print. Annoyingly, Chrome's WireGuard config forced me to pick a static DNS server; `0.0.0.0` worked at first, but not reliably.
 
+The 'disable_non_proxied_udp' option can prevent WebRTC from leaking your non-proxied IP address.
+
 ## Note to other proxy extension developers
 
 Please steal my code, because 'incognito proxy' is a good feature. I copied it from [chrome-extensions-samples](https://github.com/GoogleChrome/chrome-extensions-samples/tree/475b4b6bf1a376e0cb0de715652a46a458b5fe72/mv2-archive/extensions/proxy_configuration) and made minor improvements.
