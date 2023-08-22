@@ -20,6 +20,10 @@ The relevant API call is `chrome.proxy.settings.set({scope: 'incognito_persisten
 
 https://chrome.google.com/webstore/detail/incognito-proxy/odkbcffeaickjalieahlneeehkgjpade
 
+## Not supported on Firefox
+
+Link to bug: https://bugzilla.mozilla.org/show_bug.cgi?id=1526299
+
 ## Screenshot
 
 ![Screenshot](misc/screenshot1.png)
