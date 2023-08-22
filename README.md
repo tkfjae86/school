@@ -14,6 +14,8 @@ The `disable_non_proxied_udp` option can prevent WebRTC from leaking your non-pr
 
 Please steal my code, because 'incognito proxy' is a good feature. I copied it from [chrome-extensions-samples](https://github.com/GoogleChrome/chrome-extensions-samples/tree/475b4b6bf1a376e0cb0de715652a46a458b5fe72/mv2-archive/extensions/proxy_configuration) and made minor improvements.
 
+The relevant API call is `chrome.proxy.settings.set({scope: 'incognito_persistent', value: ...})`
+
 ## Add to Chrome
 
 https://chrome.google.com/webstore/detail/incognito-proxy/odkbcffeaickjalieahlneeehkgjpade
